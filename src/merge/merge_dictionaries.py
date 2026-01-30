@@ -20,6 +20,9 @@ MOZC_TAG = 'master'
 JAWIKI_DUMP_DATE = 'latest'
 #JAWIKI_DUMP_DATE = '20260101'
 
+WAVE_DASH = chr(0x301C)         # 〜
+FULLWIDTH_TILDE = chr(0xFF5E)   # ～
+
 
 def main():
     if len(sys.argv) == 1:
@@ -130,6 +133,13 @@ def remove_duplicates(mozc_dic):
     return (ut_dic)
 
 
+def normalize_jawiki_hyouki(hyouki):
+    # 表記の「～」を「〜」に置き換える
+    hyouki = hyouki.replace(FULLWIDTH_TILDE, WAVE_DASH)
+
+    return hyouki
+
+
 def count_word_hits():
     subprocess.run(
         ['wget', '-N', f'https://dumps.wikimedia.org/jawiki/{JAWIKI_DUMP_DATE}/' +
@@ -160,6 +170,14 @@ def count_word_hits():
            line.startswith('プロジェクト:'):
             continue
 
+        # 表記を正規化
+        line = normalize_jawiki_hyouki(line)
+        l2.append(line)
+
+    lines = sorted(list(set(l2)))
+    l2 = []
+
+    for line in lines:
         # 「BEST (三浦大知のアルバム)」を
         # 「三浦大知のアルバム)」に変更。
         # 「三浦大知」を前方一致検索できるようにする
