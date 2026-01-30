@@ -14,6 +14,13 @@ from unicodedata import normalize
 from zipfile import ZipFile
 
 
+MOZC_TAG = 'master'
+#MOZC_TAG = '2.32.5994.102'
+
+JAWIKI_DUMP_DATE = 'latest'
+#JAWIKI_DUMP_DATE = '20260101'
+
+
 def main():
     if len(sys.argv) == 1:
         print('No file specified.')
@@ -51,7 +58,7 @@ def get_ut_dic(file_ut):
 
 def get_mozc_dic():
     # Mozc の最終コミット日を取得
-    url = 'https://github.com/google/mozc/commits/master/'
+    url = f'https://github.com/google/mozc/commits/{MOZC_TAG}/'
 
     with urllib.request.urlopen(url) as response:
         date = response.read().decode()
@@ -60,7 +67,10 @@ def get_mozc_dic():
         date = date.replace('-', '')
 
     # Mozc のアーカイブが古い場合は取得
-    url = 'https://github.com/google/mozc/archive/refs/heads/master.zip'
+    if MOZC_TAG == 'master':
+        url = 'https://github.com/google/mozc/archive/refs/heads/master.zip'
+    else:
+        url = f'https://github.com/google/mozc/archive/refs/tags/{MOZC_TAG}.zip'
 
     if os.path.exists(f'mozc-{date}.zip') is False:
         urllib.request.urlretrieve(
@@ -69,7 +79,7 @@ def get_mozc_dic():
     with ZipFile(f'mozc-{date}.zip') as zip_ref:
         # 一般名詞のIDを取得
         with zip_ref.open(
-                'mozc-master/src/data/dictionary_oss/id.def') as file:
+                f'mozc-{MOZC_TAG}/src/data/dictionary_oss/id.def') as file:
             id_mozc = file.read().decode()
             id_mozc = id_mozc.split(' 名詞,一般,')[0].split('\n')[-1]
 
@@ -78,7 +88,7 @@ def get_mozc_dic():
 
         for i in range(10):
             with zip_ref.open(
-                    'mozc-master/src/data/dictionary_oss/' +
+                    f'mozc-{MOZC_TAG}/src/data/dictionary_oss/' +
                     f'dictionary0{i}.txt') as file:
                 mozc_dic += file.read().decode().splitlines()
 
@@ -122,12 +132,12 @@ def remove_duplicates(mozc_dic):
 
 def count_word_hits():
     subprocess.run(
-        ['wget', '-N', 'https://dumps.wikimedia.org/jawiki/latest/' +
-            'jawiki-latest-pages-articles-multistream-index.txt.bz2'],
+        ['wget', '-N', f'https://dumps.wikimedia.org/jawiki/{JAWIKI_DUMP_DATE}/' +
+            f'jawiki-{JAWIKI_DUMP_DATE}-pages-articles-multistream-index.txt.bz2'],
         check=True)
 
     with bz2.open(
-            'jawiki-latest-pages-articles-multistream-index.txt.bz2',
+            f'jawiki-{JAWIKI_DUMP_DATE}-pages-articles-multistream-index.txt.bz2',
             'rt', encoding='utf-8') as file:
         lines = file.read().splitlines()
 
