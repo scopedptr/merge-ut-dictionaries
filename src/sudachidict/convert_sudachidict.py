@@ -11,15 +11,23 @@ import urllib.request
 from zipfile import ZipFile
 
 
+SUDACHI_DICT_DATE = 'latest'
+#SUDACHI_DICT_DATE = '20260116'
+
+
 def main():
     url = 'http://sudachi.s3-website-ap-northeast-1.amazonaws.com/' + \
             'sudachidict-raw/'
 
-    with urllib.request.urlopen(url) as response:
-        html = response.read().decode()
+    if SUDACHI_DICT_DATE == 'latest':
+        with urllib.request.urlopen(url) as response:
+            html = response.read().decode()
 
-    # <a href='20250825/small_lex.zip'>
-    date = html.split('/small_lex.zip')[0].split('\'')[-1]
+        # <a href='20250825/small_lex.zip'>
+        date = html.split('/small_lex.zip')[0].split('\'')[-1]
+
+    else:
+        date = SUDACHI_DICT_DATE
 
     lines = get_sudachidict(f'small_lex_{date}.zip', url, date)
     lines += get_sudachidict(f'core_lex_{date}.zip', url, date)
