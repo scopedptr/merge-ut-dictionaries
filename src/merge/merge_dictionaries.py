@@ -150,6 +150,16 @@ def count_word_hits():
         # 表記のHTML特殊文字を変換
         line = html.unescape(line)
 
+        # 内部用のページをスキップ
+        if line.startswith('ファイル:') or \
+           line.startswith('Wikipedia:') or \
+           line.startswith('Template:') or \
+           line.startswith('Portal:') or \
+           line.startswith('Help:') or \
+           line.startswith('Category:') or \
+           line.startswith('プロジェクト:'):
+            continue
+
         # 「BEST (三浦大知のアルバム)」を
         # 「三浦大知のアルバム)」に変更。
         # 「三浦大知」を前方一致検索できるようにする
@@ -157,16 +167,7 @@ def count_word_hits():
 
         # 表記が1文字の場合はスキップ
         # 表記が26文字以上の場合はスキップ。候補ウィンドウが大きくなりすぎる
-        # 内部用のページをスキップ
-        if len(line) < 2 or \
-                len(line) > 25 or \
-                line.startswith('ファイル:') or \
-                line.startswith('Wikipedia:') or \
-                line.startswith('Template:') or \
-                line.startswith('Portal:') or \
-                line.startswith('Help:') or \
-                line.startswith('Category:') or \
-                line.startswith('プロジェクト:'):
+        if len(line) < 2 or len(line) > 25:
             continue
 
         l2.append(line)
