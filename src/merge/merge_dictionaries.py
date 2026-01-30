@@ -10,6 +10,7 @@ import os
 import subprocess
 import sys
 import urllib.request
+from collections import Counter
 from unicodedata import normalize
 from zipfile import ZipFile
 
@@ -177,6 +178,8 @@ def count_word_hits():
     lines = sorted(list(set(l2)))
     l2 = []
 
+    counter = Counter()
+
     for line in lines:
         # 「BEST (三浦大知のアルバム)」を
         # 「BEST」と「三浦大知のアルバム」に分割。
@@ -211,6 +214,7 @@ def count_word_hits():
 
                 if len(part2) >= 2 and len(part2) <= 25:
                     l2.append(part2)
+                    counter[part2] += 1
 
                 line = part1
 
@@ -220,6 +224,7 @@ def count_word_hits():
             continue
 
         l2.append(line)
+        counter[line] += 1
 
     lines = sorted(list(set(l2)))
     l2 = []
@@ -227,13 +232,14 @@ def count_word_hits():
     lines_len = len(lines)
 
     for i in range(lines_len):
+        b = counter[lines[i]]
         c = 1
 
         # 前方一致するエントリがなくなるまでカウント
         while i + c < lines_len and lines[i + c].startswith(lines[i]):
             c = c + 1
 
-        entry = ['jawiki_hits', '0', '0', str(c), lines[i]]
+        entry = ['jawiki_hits', '0', '0', str(b + (c - 1)), lines[i]]
         l2.append(entry)
 
     return (l2)
